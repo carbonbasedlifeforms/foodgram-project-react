@@ -1,0 +1,13 @@
+asgiref==3.3.2
+Django==3.2
+django-filter~=22.1
+djangorestframework==3.12.4
+drf-extra-fields
+djoser
+gunicorn==20.1.0
+pillow
+psycopg2-binary
+python-dotenv
+pytz==2020.1
+sqlparse==0.3.1
+requests==2.26.0
