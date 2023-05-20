@@ -3,6 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Кастомизированная модель User"""
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
     email = models.EmailField(
@@ -42,6 +43,7 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
+    """Модель подписок на других пользователей"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -60,6 +62,10 @@ class Follow(models.Model):
             models.UniqueConstraint(
                 fields=['user', 'author'],
                 name='unique_follow'
+            ),
+            models.CheckConstraint(
+                check=models.Q(user=models.F('user')),
+                name='check_self_follow'
             )
         ]
         verbose_name = 'Подписка'

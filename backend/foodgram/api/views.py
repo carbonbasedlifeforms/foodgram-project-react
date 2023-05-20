@@ -37,14 +37,18 @@ User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
+    """Вьюсет работы с пользователями"""
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     pagination_class = CustomPageNumberPagination
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    @action(methods=('GET', ),
-            url_path='subscriptions', detail=False,
-            permission_classes=(IsAuthenticated,))
+    @action(
+        methods=('GET', ),
+        url_path='subscriptions',
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
     def read_subscribe(self, request):
         user = request.user
         subscriptions = Follow.objects.filter(user=user)
@@ -56,13 +60,26 @@ class CustomUserViewSet(UserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-    @action(methods=('POST', 'DELETE'),
-            url_path='subscribe', detail=True,
-            permission_classes=(IsAuthenticated,))
+    @action(
+        methods=('POST', 'DELETE'),
+        url_path='subscribe',
+        detail=True,
+        permission_classes=(IsAuthenticated,)
+    )
     def subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
         if request.method == 'POST':
+            if Follow.objects.filter(user=user, author=author).exists():
+                return Response(
+                    {'Error': 'Уже есть такая подписка'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if user.id == author.id:
+                return Response(
+                    {'Error': 'На себя подписаться нельзя'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             subscription = Follow.objects.create(
                 user=user,
                 author=author
@@ -72,19 +89,18 @@ class CustomUserViewSet(UserViewSet):
                 context={'request': request},
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
-            author = self.get_object()
-            deleted = Follow.objects.get(
-                user=user,
-                author=author
-            ).delete()
-            if deleted:
-                return Response({
-                    'message': 'Подписка удалена'},
-                    status=status.HTTP_204_NO_CONTENT)
+        Follow.objects.get(
+            user=user,
+            author=self.get_object()
+        ).delete()
+        return Response(
+            {'message': 'Подписка удалена'},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
+    """Вьюсет игредиентов"""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -93,6 +109,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет рецептов"""
     queryset = Recipe.objects.all()
     serializer_class = MainRecipeSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -107,11 +124,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def add_obj(self, model, user, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
         obj, created = model.objects.get_or_create(user=user, recipe=recipe)
-        if created:
-            serializer = BreifRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
+        if not created:
             return Response(status=status.HTTP_304_NOT_MODIFIED)
+        serializer = BreifRecipeSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_obj(self, model, user, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -126,10 +142,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
-        if request.method == 'POST':
-            return self.add_obj(Favorite, request.user, pk)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             return self.delete_obj(Favorite, request.user, pk)
+        return self.add_obj(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -138,10 +153,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
-        if request.method == 'POST':
-            return self.add_obj(ShoppingList, request.user, pk)
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             return self.delete_obj(ShoppingList, request.user, pk)
+        return self.add_obj(ShoppingList, request.user, pk)
 
     @action(
         detail=False,
@@ -167,6 +181,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ModelViewSet):
+    """Вьюсет тегов"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None

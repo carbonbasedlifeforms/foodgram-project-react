@@ -1,20 +1,20 @@
-from django.core.validators import MinValueValidator
 from django.db import models
 
+from api.validators import validate_count
 from users.models import User
 
-MIN_TIME = 1
-MIN_INGR = 1
+MAX_LENGTH = 200
 
 
 class Ingredient(models.Model):
+    """Модель игредиентов"""
     name = models.CharField(
         verbose_name='Название ингредиента',
-        max_length=200,
+        max_length=MAX_LENGTH,
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
-        max_length=200,
+        max_length=MAX_LENGTH,
     )
 
     class Meta:
@@ -26,9 +26,10 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
+    """Модель тегов"""
     name = models.CharField(
         verbose_name='Название тега',
-        max_length=200,
+        max_length=MAX_LENGTH,
         unique=True
     )
     color = models.CharField(
@@ -38,7 +39,7 @@ class Tag(models.Model):
     )
     slug = models.SlugField(
         verbose_name='slug',
-        max_length=200,
+        max_length=MAX_LENGTH,
         unique=True
     )
 
@@ -51,9 +52,10 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
+    """Модель рецептов"""
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=200,
+        max_length=MAX_LENGTH,
     )
     text = models.TextField(
         verbose_name='Описание рецепта',
@@ -84,12 +86,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[
-            MinValueValidator(
-                MIN_TIME,
-                f'Время приготовления не менее {MIN_TIME} минуты'
-            )
-        ]
+        validators=[validate_count]
     )
 
     class Meta:
@@ -102,6 +99,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """Модель игредиентов рецепта"""
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -117,12 +115,7 @@ class RecipeIngredient(models.Model):
     )
     amount = models.IntegerField(
         'Количество игредиентов',
-        validators=[
-            MinValueValidator(
-                MIN_INGR,
-                f'Количество ингредиентов не менее {MIN_INGR}'
-            )
-        ]
+        validators=[validate_count]
     )
 
     class Meta:
@@ -134,6 +127,7 @@ class RecipeIngredient(models.Model):
 
 
 class Favorite(models.Model):
+    """Модель рецептов добавленных в избранное"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -148,7 +142,6 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -166,6 +159,7 @@ class Favorite(models.Model):
 
 
 class ShoppingList(models.Model):
+    """Модель листа покупок"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -180,7 +174,6 @@ class ShoppingList(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
