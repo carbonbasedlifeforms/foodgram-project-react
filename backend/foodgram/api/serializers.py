@@ -182,15 +182,15 @@ class MainRecipeSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, value):
         if not value or len(value) == 0:
             raise serializers.ValidationError(
-                 'Рецепт должен содержать хотя бы один ингредиент!'
-             )
+                'Рецепт должен содержать хотя бы один ингредиент!'
+            )
         return value
 
     def validate_tags(self, value):
         if not value or len(value) == 0:
             raise serializers.ValidationError(
                 'Рецепт должен содержать хотя бы один тег!'
-             )
+            )
         return value
 
 
