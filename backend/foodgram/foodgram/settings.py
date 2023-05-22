@@ -128,3 +128,11 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['rest_framework.permissions.IsAuthenticated']}
 }
+
+MIN_COUNT = 1
+EMAIL_MAX_LENGTH = 256
+NAMES_MAX_LENGTH = 150
+RECIPE_MAX_LENGTH = 200
+COLOR_MAX_LENGTH = 7
+MIN_INGREDIENTS_QTY = 1
+MIN_COOKING_TIME = 1

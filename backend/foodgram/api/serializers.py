@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
@@ -12,7 +13,7 @@ from recipes.models import (
     Tag
 )
 from users.models import Follow
-from .validators import validate_count
+from .validators import validate_cooking_time, validate_count
 
 User = get_user_model()
 
@@ -33,8 +34,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = User
 
     def get_is_subscribed(self, obj):
+        """Метод проверки наличия подписки на пользователя"""
         request = self.context.get('request')
-        if (request is None or request.user.is_anonymous):
+        if request is None or request.user.is_anonymous:
             return False
         return Follow.objects.filter(
             user=request.user,
@@ -55,7 +57,8 @@ class FollowingSerializer(serializers.ModelSerializer):
     recipes = BreifRecipeSerializer(
         many=True,
         read_only=True,
-        source='author.recipe_author')
+        source='author.recipe_author'
+    )
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -63,9 +66,11 @@ class FollowingSerializer(serializers.ModelSerializer):
         fields = ('author', 'recipes', 'recipes_count', 'user')
 
     def get_recipes_count(self, obj):
+        """Метод возвращает кол-во рецептов автора"""
         return obj.author.recipe_author.count()
 
     def to_representation(self, instance):
+        """Метод представления результатов сериализатора"""
         representation = super().to_representation(instance)
         return {
             'email': representation['author']['email'],
@@ -130,15 +135,9 @@ class MainRecipeSerializer(serializers.ModelSerializer):
         many=True,
         write_only=True,
     )
-
-    def create_ingredients(self, ingredients, recipe):
-        RecipeIngredient.objects.bulk_create(
-            [RecipeIngredient(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
-                recipe=recipe,
-                amount=ingredient['amount']
-            ) for ingredient in ingredients]
-        )
+    cooking_time = serializers.IntegerField(
+        validators=[validate_cooking_time]
+    )
 
     class Meta:
         model = Recipe
@@ -153,6 +152,17 @@ class MainRecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
         read_only_fields = ('author',)
+
+    @staticmethod
+    def create_ingredients(ingredients, recipe):
+        """Метод для добавления ингредиентов"""
+        RecipeIngredient.objects.bulk_create(
+            [RecipeIngredient(
+                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                recipe=recipe,
+                amount=ingredient['amount']
+            ) for ingredient in ingredients]
+        )
 
     @transaction.atomic
     def create(self, validated_data):
@@ -177,19 +187,31 @@ class MainRecipeSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
+        """Метод представления результатов сериализатора"""
         return ReadRecipeSerializer(instance, context=self.context).data
 
-    def validate_ingredients(self, value):
-        if not value or len(value) == 0:
+    def validate_author(self, value):
+        """Метод валидации подписки на самого себя"""
+        if value == self.context['request'].user:
             raise serializers.ValidationError(
-                'Рецепт должен содержать хотя бы один ингредиент!'
+                'На себя подписаться нельзя!'
+            )
+
+    def validate_ingredients(self, value):
+        """Метод валидации кол-ва игредиентов в рецепте"""
+        if not value or len(value) < settings.MIN_INGREDIENTS_QTY:
+            raise serializers.ValidationError(
+                f'Рецепт должен содержать хотя бы '
+                f'{settings.MIN_INGREDIENTS_QTY} ингредиент!'
             )
         return value
 
     def validate_tags(self, value):
-        if not value or len(value) == 0:
+        """Метод валидации кол-ва игредиентов в рецепте"""
+        if not value or len(value) < settings.MIN_INGREDIENTS_QTY:
             raise serializers.ValidationError(
-                'Рецепт должен содержать хотя бы один тег!'
+                f'Рецепт должен содержать хотя бы '
+                f'{settings.MIN_INGREDIENTS_QTY} тег!'
             )
         return value
 
@@ -208,6 +230,7 @@ class ReadRecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
 
     def get_is_favorited(self, obj):
+        """Имеется ли рецепт в избранном"""
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
@@ -217,6 +240,7 @@ class ReadRecipeSerializer(serializers.ModelSerializer):
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
+        """Имеется ли рецепт в списке покупок"""
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False

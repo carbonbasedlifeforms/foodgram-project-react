@@ -1,20 +1,19 @@
 from django.db import models
+from django.conf import settings
 
-from api.validators import validate_count
+from api.validators import validate_cooking_time, validate_count
 from users.models import User
-
-MAX_LENGTH = 200
 
 
 class Ingredient(models.Model):
     """Модель игредиентов"""
     name = models.CharField(
         verbose_name='Название ингредиента',
-        max_length=MAX_LENGTH,
+        max_length=settings.RECIPE_MAX_LENGTH,
     )
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
-        max_length=MAX_LENGTH,
+        max_length=settings.RECIPE_MAX_LENGTH,
     )
 
     class Meta:
@@ -29,17 +28,17 @@ class Tag(models.Model):
     """Модель тегов"""
     name = models.CharField(
         verbose_name='Название тега',
-        max_length=MAX_LENGTH,
+        max_length=settings.RECIPE_MAX_LENGTH,
         unique=True
     )
     color = models.CharField(
         verbose_name='Цвет',
-        max_length=7,
+        max_length=settings.COLOR_MAX_LENGTH,
         unique=True
     )
     slug = models.SlugField(
         verbose_name='slug',
-        max_length=MAX_LENGTH,
+        max_length=settings.RECIPE_MAX_LENGTH,
         unique=True
     )
 
@@ -55,7 +54,7 @@ class Recipe(models.Model):
     """Модель рецептов"""
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=MAX_LENGTH,
+        max_length=settings.RECIPE_MAX_LENGTH,
     )
     text = models.TextField(
         verbose_name='Описание рецепта',
@@ -86,7 +85,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[validate_count]
+        validators=[validate_cooking_time]
     )
 
     class Meta:

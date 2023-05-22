@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 
 
@@ -8,33 +9,32 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
-        max_length=254,
+        max_length=settings.EMAIL_MAX_LENGTH,
         db_index=True,
         unique=True,
         blank=False,
     )
     username = models.CharField(
         verbose_name='Уникальный юзернейм',
-        max_length=150,
+        max_length=settings.NAMES_MAX_LENGTH,
         db_index=True,
         unique=True,
         blank=False,
     )
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=150,
+        max_length=settings.NAMES_MAX_LENGTH,
         blank=False,
         null=False,
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=150,
+        max_length=settings.NAMES_MAX_LENGTH,
         blank=False,
         null=False
     )
 
     class Meta:
-        ordering = ['id']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 

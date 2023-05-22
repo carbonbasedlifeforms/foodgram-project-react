@@ -50,6 +50,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def read_subscribe(self, request):
+        """Метод вывода существующих подписок"""
         user = request.user
         subscriptions = Follow.objects.filter(user=user)
         page = self.paginate_queryset(subscriptions)
@@ -67,6 +68,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, id=None):
+        """Метод добавления/удаления подписки на пользователя"""
         user = request.user
         author = get_object_or_404(User, id=id)
         if request.method == 'POST':
@@ -117,11 +119,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
 
     def get_serializer_class(self):
+        """Выбор сериализатора в зависимости от типа запроса POST/PATCH"""
         if self.request.method in ('POST', 'PATCH'):
             return MainRecipeSerializer
         return ReadRecipeSerializer
 
     def add_obj(self, model, user, pk):
+        """Метод добавления рецепта"""
         recipe = get_object_or_404(Recipe, pk=pk)
         obj, created = model.objects.get_or_create(user=user, recipe=recipe)
         if not created:
@@ -130,6 +134,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_obj(self, model, user, pk):
+        """Метод удаления рецепта"""
         recipe = get_object_or_404(Recipe, pk=pk)
         obj = get_object_or_404(model, user=user, recipe=recipe)
         obj.delete()
@@ -142,6 +147,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
+        """Добавление/удаление в избранное"""
         if request.method == 'DELETE':
             return self.delete_obj(Favorite, request.user, pk)
         return self.add_obj(Favorite, request.user, pk)
@@ -153,6 +159,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
+        """Добавление/удаление в список покупок"""
         if request.method == 'DELETE':
             return self.delete_obj(ShoppingList, request.user, pk)
         return self.add_obj(ShoppingList, request.user, pk)
@@ -163,6 +170,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
+        """Выгрузка списка покупок в формате txt"""
         ingredients = RecipeIngredient.objects.filter(
             recipe__shoppinglist_recipe__user=request.user
         ).values(
