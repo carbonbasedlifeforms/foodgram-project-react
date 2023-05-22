@@ -196,6 +196,7 @@ class MainRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'На себя подписаться нельзя!'
             )
+        return value
 
     def validate_ingredients(self, value):
         """Метод валидации кол-ва игредиентов в рецепте"""
