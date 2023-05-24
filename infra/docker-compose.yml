@@ -20,7 +20,7 @@ services:
     image: taprom/foodgram-backend:latest
     restart: always
     volumes:
-      - ./fixtures.json:/app/fixtures.json
+      - ./fixtures:/app/fixtures
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on:
