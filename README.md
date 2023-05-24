@@ -1,5 +1,7 @@
 # Дипломный проект FoodGram
 
+![Github actions](https://github.com/carbonbasedlifeforms/foodgram-project-react/actions/workflows/foodgram-project-react.yaml/badge.svg)
+
 Foodgram реализует функционал продуктового помощника - сайт, многопользовательская система для публикации рецептов блюд
 авторизованными пользователями со встроенным механизмом рещистрации пользователей, публикацией рецептов с использованием предустановленных ингредиентов блюд, с возможностями подписки на других авторов, добавления рецептов в избранное, подготовки списка покупок на основе рецепта и его скачивания с сайта.
 
@@ -22,50 +24,43 @@ DB_HOST=*<название сервиса (контейнера)>*
 
 DB_PORT=*<порт для подключения к БД>*
 
-***Вариант запуска в контейнерах: сервис фронта, nginx, postgresql и бэка локально через runserver***;
-Перейтите в каталог infra_dev
+Перейтите в каталог foodgram-project-react/infra
 ```bash
-cd ./infra_dev
+cd ./foodgram-project-react/infra
 ```
 
-Соберите образы сервисов с помощью docker-compose
+Соберите образ с помощью docker-compose
 ```bash
 docker-compose up -d --build
 ```
 
-Для возможности удобной и оперативной отладки проекта
-запустите сервис бэкэнда локально:
-
-Перейдите в каталог backend/frontend:
-```bash
-cd ./backend/frontend
-```
-
-Cоздайте и активируйте виртуальное окружение:
-
-```bash
-python3 -m venv env
-source env/bin/activate
-```
-
-Установите зависимости из файла requirements.txt:
-
-```bash
-python3 -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
 Выполните миграции:
-```bash
-python manage.py migrate
+```bash 
+docker-compose exec backend python manage.py migrate
 ```
 
-Запустите проект бэкэнда:
+Соберите статику в проекте:
 ```bash
-python manage.py runserver
+docker-compose exec backend python manage.py collectstatic --no-input
+```
+
+Создайте суперпользователя:
+```bash
+docker-compose exec backend python manage.py createsuperuser
+```
+
+Заполните базу данных:
+```bash
+docker-compose exec backend python manage.py loaddata fixtures.json
 ```
 
 Проект доступен по адресу:
 ```bash
 http://localhost
+```
+
+Документация к api доступна по адресу:
+```
+http://localhost/api/docs/redoc.html
+http://localhost/api/docs/swagger.html
 ```
