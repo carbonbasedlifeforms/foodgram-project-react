@@ -12,6 +12,7 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 
 from .filters import RecipeFilter, IngredientFilter
+
 from .paginations import CustomPageNumberPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -183,8 +184,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             amount = ingredient['ingredient_amount']
             shopping_list.append(f'\n{name} - {amount}, {unit}')
         response = HttpResponse(shopping_list, content_type='text/plain')
-        response['Content-Disposition'] = \
-            'attachment; filename="shopping_cart.txt"'
+        response['Content-Disposition'] = 'attachment; '
+        'filename="shopping_cart.txt"'
         return response
 
 

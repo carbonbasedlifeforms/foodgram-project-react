@@ -1,6 +1,6 @@
 # Дипломный проект FoodGram
 
-![Github actions](https://github.com/carbonbasedlifeforms/foodgram-project-react/actions/workflows/foodgram-project-react.yaml/badge.svg)
+![Github actions](https://github.com/carbonbasedlifeforms/foodgram-project-react/actions/workflows/foodgram_workflow.yaml/badge.svg)
 
 Foodgram реализует функционал продуктового помощника - сайт, многопользовательская система для публикации рецептов блюд
 авторизованными пользователями со встроенным механизмом рещистрации пользователей, публикацией рецептов с использованием предустановленных ингредиентов блюд, с возможностями подписки на других авторов, добавления рецептов в избранное, подготовки списка покупок на основе рецепта и его скачивания с сайта.
