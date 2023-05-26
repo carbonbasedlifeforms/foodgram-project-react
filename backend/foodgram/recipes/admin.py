@@ -36,7 +36,7 @@ class RecipeAdmin(admin.ModelAdmin):
 class RecipeIngredientAdmin(admin.ModelAdmin):
     """Админка модели RecipeIngredient"""
     list_display = ('pk', 'recipe', 'ingredient', 'amount')
-    search_fields = ('ingredient',)
+    search_fields = ('ingredient__name',)
     empty_value_display = '-empty-'
 
 

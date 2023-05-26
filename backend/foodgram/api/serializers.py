@@ -155,7 +155,7 @@ class MainRecipeSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     @staticmethod
-    def create_ingredients(ingredients, recipe):
+    def create_ingredients(recipe, ingredients):
         """Метод для добавления ингредиентов"""
         RecipeIngredient.objects.bulk_create(
             [RecipeIngredient(
@@ -182,7 +182,7 @@ class MainRecipeSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         instance.tags.clear()
         instance.tags.set(tags)
-        instance.ingredient.clear()
+        instance.ingredients.clear()
         self.create_ingredients(recipe=instance, ingredients=ingredients)
         instance.save()
         return instance
